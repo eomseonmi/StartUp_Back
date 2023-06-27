@@ -7,7 +7,7 @@ import openai
 
 app = Flask(__name__)
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):
@@ -16,7 +16,9 @@ def generate_image(prompt):
         n=1,
         size="1024x1024"
     )
-    image_urls = [image.url for image in response.images]
+    #image_urls = [image.url for image in response.images]
+    image_urls = response['data'][0]['url']
+    print(response['data'][0]['url'])
     return image_urls
 
 @app.route('/', methods=['GET', 'POST'])

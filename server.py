@@ -5,6 +5,30 @@ import http.client
 import os
 import openai
 
+app = Flask(__name__)
+openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
+openai.api_key = "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"
+openai.Model.list()
+
+def generate_image(prompt):
+    response = openai.Image.create(
+        prompt=prompt,
+        n=1,
+        size="1024x1024"
+    )
+    image_urls = [image.url for image in response.images]
+    return image_urls
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        text = request.form['text']
+        # 입력된 텍스트를 사용하여 이미지 생성
+        image_urls = generate_image(text)
+        return render_template('images.html', image_urls=image_urls)
+    return render_template('images.html')
+
+
 class CompletionExecutor:
     def __init__(self, host, api_key, api_key_primary_val, request_id):
         self._host = host
@@ -33,30 +57,6 @@ class CompletionExecutor:
             return res['result']['text']
         else:
             return 'Error'
-
-
-app = Flask(__name__)
-openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
-openai.Model.list()
-
-def generate_image(prompt):
-    response = openai.Image.create(
-        prompt=prompt,
-        n=1,
-        size="1024x1024"
-    )
-    image_urls = [image.url for image in response.images]
-    return image_urls
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        text = request.form['text']
-        # 입력된 텍스트를 사용하여 이미지 생성
-        image_urls = generate_image(text)
-        return render_template('images.html', image_urls=image_urls)
-    return render_template('images.html')
 
 @app.route('/a', methods=['GET'])
 def invoke_completion():

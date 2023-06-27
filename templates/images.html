@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Generation with Dalí AI</title>
+</head>
+<body>
+    <h1>Image Generation with Dalí AI</h1>
+    <form method="POST" action="/">
+        <label for="text">Text:</label>
+        <input type="text" id="text" name="text">
+        <input type="submit" value="Generate">
+    </form>
+    {% if image %}
+        <img src="{{ image }}" alt="Generated Image">
+    {% endif %}
+</body>
+</html>

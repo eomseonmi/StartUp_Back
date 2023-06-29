@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
 import base64
 import json
 import http.client
@@ -7,14 +8,16 @@ import os
 import openai
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):
     response = openai.Image.create(
         prompt=prompt,
-        n=2,
+        n=1,
         size="256x256"
     )
    
@@ -33,9 +36,23 @@ def generate_image(prompt):
 @app.route('/getImage', methods=['GET'])
 def index():
     text = request.args.get('str')  #str : 전달된 파라미터
-    
+    text += '를 영어로 번역하면'
+
+    print(text)
+       
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=text,
+        temperature=0.3,
+        max_tokens=100,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    print(response['choices'][0]['text'])
+
     # 입력된 텍스트를 사용하여 이미지 생성
-    image_urls = generate_image(text)
+    image_urls = generate_image(response['choices'][0]['text'])
     print(image_urls)
     return image_urls
 
@@ -59,13 +76,15 @@ class CompletionExecutor:
         conn.request('POST', '/testapp/v1/completions/LK-D2', json.dumps(completion_request), headers)
         response = conn.getresponse()
         result = json.loads(response.read().decode(encoding='utf-8'))
+
         conn.close()
         return result
 
     def execute(self, completion_request):
         res = self._send_request(completion_request)
         if res['status']['code'] == '20000':
-            return res['result']['text']
+            print(res['result']['outputTokens'])
+            return res['result']['outputTokens']
         else:
             return 'Error'
 
@@ -73,40 +92,51 @@ class CompletionExecutor:
 def invoke_completion():
     host = 'clovastudio.apigw.ntruss.com'
   
-    api_key='NTA0MjU2MWZlZTcxNDJiY2Vuw9hOjyf1wgG7wXI2WbIvJDJsk7lfXX7e15ByQr+4PTAy7K8RBPh7GN379TRUEcLc+MZ9n+yMoV4xkZ1nHdaiwfZU+Yzb5s6K5HanO/5n+kBFNpSLa3AWI4fmvzj7y0WlZ2v4CLbBKqDwkdv4wKw4MK2+aMG6YFUy/39evqYQvDRTD9+ZEIOJbt1v7wfTfpFSjk+wBR41o1cxSJx0qqM='
+    api_key='NTA0MjU2MWZlZTcxNDJiY4cqwRLuqRsQk6zjZ/E82EdA80+zPLK+0CduBjGUCd4E+ingzn3Qlf62n+vLFnO2s5bZ1BW++vMqmLVtd8clDHYZqJCOP6+A3342eaZCn904QxzjX+A5mKKgUkv1fxFlxSKBXJk/Q2pEuLxrDyq0PfbQ9m7UWzVJy1U544OyoHcQBMFzSr9VaOypo87liCVlc2j65ysB6yam2dy2B1Ql5+w='
     api_key_primary_val = 'NtCsDeWuLXowvJfzvqe16WRFf3mlfNZFKoN5I72Y'
-    request_id='ec3db1ce8825484c876fb7a3483dbb02'
-
+    request_id='748b7b844d854c46b924158a3374dc77'
 
     completion_executor = CompletionExecutor(host, api_key, api_key_primary_val, request_id)
 
     str_param = request.args.get('str')     #str : 전달된 파라미터
-    preset_text = '사용자가 입력한 상황에 맞는 메세지카드를 작성해주세요.\n\n###\n상황: 부모님께 새해 인사\n문구: 사랑하는 나의 부모님, 새해에는 더욱 웃음 가득한 한 해 되세요. 감사합니다, 사랑합니다.\n###\n상황: 선생님께 스승의날 감사\n문구: 사랑으로 이끌어 주신 선생님의 가르침에 깊이 감사드립니다. 스승의 은혜, 잊지 않겠습니다. 사랑합니다.\n###\n상황: 선생님께 스승의날 감사\n문구: 하늘같은 가르침에 작은 마음을 전합니다. 감사합니다, 사랑합니다, 나의 선생님.\n###\n상황: 선생님께 스승의날 감사\n문구: 사랑하는 선생님의 베풀어주신 은혜에 깊이 감사드립니다. 항상 건강하세요.\n###\n상황: 고등학교 때 선생님께 오랜만에 스승의날 인사\n문구: 늘 선생님의 가르침을 마음에 새기고 열심히 살고 있습니다. 선생님의 은혜에 깊이 감사드립니다.\n###\n상황: 졸업하며 선생님께 인사\n문구: 선생님께서 저에게 주신 가르침과 은혜를 늘 잊지 않고 마음 속 깊이 간직하며 살아가겠습니다. 감사합니다.\n###\n상황: 선생님께 스승의날 감사\n문구: 고맙다는 말로 다 갚지도 못할 스승님의 깊은 사랑, 항상 느끼며 살아가고 있습니다. 존경합니다. 감사합니다.\n###\n상황: 중학교때 선생님께 스승의날 인사\n문구: 부족함 투성이인 저를 이렇게 이끌어주시고 희망을 주셨던 선생님의 가르침이 떠오릅니다. 가슴 깊이 존경하며 감사드립니다.\n###\n상황: 선생님께 스승의날 인사\n문구: 가르쳐주신 깊은 은혜와 넓은 사랑, 평생 소중하게 기억하겠습니다. 항상 건강하시고 행복하세요.\n###\n상황: 선생님께 스승의날 인사\n문구: 언제나 따뜻한 미소로 저희를 보듬어주시던 선생님의 모습이 그립습니다. 그 크신 은혜에 진심으로 감사드립니다.\n###\n상황: 선생님께 스승의날 인사\n문구: 인생의 등불이 되어주신 선생님! 제가 받은 큰 사랑은 절대 잊지 않겠습니다. 고맙습니다.\n###\n상황: 선생님께 스승의날 인사\n문구: 바른 길로 인도해주신 선생님의 은혜는 결코 잊지 않겠습니다. 더 크게 보답할 수 있도록 노력하겠습니다.\n###\n상황: 초등학교때 선생님께 스승의날 인사\n문구: 감사하는 마음 다 갚을 길이 없지만, 언제나 가슴 깊이 스승님의 은혜를 간직하고 있겠습니다. 항상 건강하시고, 행복하세요.\n###\n상황: 학원 선생님께 스승의날 인사\n문구: 선생님께 고마움과 존경의 마음을 담아 감사의 인사를 전합니다. 감사합니다 그리고 사랑합니다.\n###\n상황: '
 
-    preset_text = ''.join(str_param)
+    preset_text = '사용자가 입력한 상황에 맞는 메세지카드를 작성해주세요.\n고급스러운 분위기로 부드러운 표현을 사용해주세요.\n\n###\n상황: 선생님께 스승의날 선물\n문구: 인생의 등불이 되어주신 선생님! 스승의 은혜에 보답하는 마음으로 인사를 드립니다. 감사합니다, 사랑합니다.\n###\n상황: 부모님께 새해 선물\n문구: 항상 베풀어주시는 사랑에 감사드리며 새해에도 건강하시고 행복하세요. 단 하나뿐인 나의 부모님, 사랑합니다.\n###\n상황: 팀원에게 크리스마스 선물\n문구: 메리크리스마스! 산타의 푸근한 미소처럼 사랑과 따뜻함을 느껴보는 성탄절 보내세요. \n###\n상황: 사장님께 추석 선물\n문구: 항상 가정에 화목과 행복이 충만하고 뜻하시는 모든 일에 발전과 번영이 있기를 기원합니다. 풍요로운 한가위 보내세요.\n###\n상황: 할머니께 생일 선물\n문구: 사랑하는 할머니의 생신을 진심으로 축하드립니다. 항상 건강하고 행복하세요. 사랑합니다.\n###\n상황: '    
+    preset_text += str_param
 
-   
+    print(str_param)
+    print(preset_text)
+    print('***********')
+
     request_data = {
         'text': preset_text,
         'maxTokens': 165,
-        'temperature': 0.55,
+        'temperature': 0.75,
         'topK': 0,
         'topP': 0.8,
-        'repeatPenalty': 5.0,
+        'repeatPenalty': 7.0,
         'start': '\n문구:',
-        'restart': '###\n상황:',
-        'stopBefore': ['###\n', '상황:', '문구:'],
+        'restart': '\n###\n상황:',
+        'stopBefore': ['###\n', '상황:', '문구:', '###'],
         'includeTokens': True,
         'includeAiFilters': True,
         'includeProbs': False
     }
 
     response_text = completion_executor.execute(request_data)
-    print(response_text)
 
-    return response_text
+    resultword = ""
+    for word in response_text :
+    
+        if word == '###' :
+            break
+        else :
+            resultword = resultword + word
+    print('***************')
+    print('******resultword*********')
+    print(resultword)
 
-
+    resultword = resultword.replace('#','')
+    return resultword
 
 if __name__ == '__main__':
     app.run()

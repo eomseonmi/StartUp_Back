@@ -11,13 +11,13 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):
     response = openai.Image.create(
         prompt=prompt,
-        n=1,
+        n=4,
         size="256x256"
     )
    
@@ -27,7 +27,7 @@ def generate_image(prompt):
             image_url = item['url']
             image_urls.append(image_url)
 
-    combined_url = ''.join(image_urls)
+    combined_url = '##*##*'.join(image_urls)
     print(combined_url)
 
     return combined_url

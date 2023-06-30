@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import base64
@@ -11,7 +13,7 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):

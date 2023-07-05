@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import ssl
+import time
+
 ssl._create_default_https_context = ssl._create_unverified_context
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
@@ -13,7 +15,7 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "sk-"
 openai.Model.list()
 
 def generate_image(prompt):
@@ -93,10 +95,11 @@ class CompletionExecutor:
 @app.route('/getText', methods=['GET'])
 def invoke_completion():
     host = 'clovastudio.apigw.ntruss.com'
-  
+ 
     api_key='NTA0MjU2MWZlZTcxNDJiY4cqwRLuqRsQk6zjZ/E82EdA80+zPLK+0CduBjGUCd4E+ingzn3Qlf62n+vLFnO2s5bZ1BW++vMqmLVtd8clDHYZqJCOP6+A3342eaZCn904QxzjX+A5mKKgUkv1fxFlxSKBXJk/Q2pEuLxrDyq0PfbQ9m7UWzVJy1U544OyoHcQBMFzSr9VaOypo87liCVlc2j65ysB6yam2dy2B1Ql5+w='
     api_key_primary_val = 'NtCsDeWuLXowvJfzvqe16WRFf3mlfNZFKoN5I72Y'
-    request_id='748b7b844d854c46b924158a3374dc77'
+    request_id='e1ce242e6fdb4c50ba83d09598a24e41'
+
 
     completion_executor = CompletionExecutor(host, api_key, api_key_primary_val, request_id)
 
@@ -122,22 +125,28 @@ def invoke_completion():
         'includeTokens': True,
         'includeAiFilters': True,
         'includeProbs': False
+        
     }
-
-    response_text = completion_executor.execute(request_data)
-
     resultword = ""
-    for word in response_text :
-    
-        if word == '###' :
-            break
-        else :
-            resultword = resultword + word
-    print('***************')
-    print('******resultword*********')
-    print(resultword)
 
-    resultword = resultword.replace('#','')
+    for _ in range(4):
+        response_text = completion_executor.execute(request_data)
+        print(response_text)
+    
+        for word in response_text :
+        
+            if word == '###' :
+                break
+            else :
+                resultword = resultword + word
+        print('***************')
+        print('******resultword*********')
+        print(resultword)
+
+        resultword = resultword.replace('#','')
+        resultword = resultword + "^"
+
+        time.sleep(0.5)  
     return resultword
 
 if __name__ == '__main__':

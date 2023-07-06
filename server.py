@@ -15,7 +15,7 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "sk-"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):
@@ -144,9 +144,9 @@ def invoke_completion():
         print(resultword)
 
         resultword = resultword.replace('#','')
-        resultword = resultword + "^"
+        resultword = resultword + "$$"
 
-        time.sleep(0.5)  
+        time.sleep(0.7)  
     return resultword
 
 if __name__ == '__main__':

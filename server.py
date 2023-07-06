@@ -15,7 +15,7 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 openai.organization = "org-bbagKC4X3yawNt0tPYEb8DMD"
-openai.api_key = "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"
+openai.api_key = "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"
 openai.Model.list()
 
 def generate_image(prompt):
@@ -59,6 +59,27 @@ def index():
     image_urls = generate_image(response['choices'][0]['text'])
     print(image_urls)
     return image_urls
+
+
+@app.route('/getImageTest', methods=['GET'])
+def getImageTest():    
+    image_urls = [
+        'https://img.freepik.com/premium-photo/abstract-futuristic-background-with-fractal-horizon-sky-blue-tones_476363-1924.jpg?w=2000',
+        'https://img.freepik.com/premium-photo/raster-illustration-metropolis-future-skyscrapers-neon-blue-glow-turquoise-telecommunication-tower-global-network-park-city-against-blue-sky-technology-concept-3d-artwork_76964-2216.jpg?w=1800',
+        'https://img.freepik.com/free-photo/blossom-floral-bouquet-decoration-colorful-beautiful-flowers-background-garden-flowers-plant-pattern-wallpapers-greeting-cards-postcards-design-wedding-invites_90220-1103.jpg?w=1800&t=st=1688613448~exp=1688614048~hmac=bc50d3b74679057d201ae4a0d704245871cf2e05379123034494842dd3731dfc',
+        'https://img.freepik.com/premium-photo/big-data-perspective-view-digital-globe-concept-futuristic-city-skyline-information-cyber-center-from-particles_90220-1045.jpg?w=1800'
+    ]
+
+    extracted_urls = []
+    for item in image_urls:
+        extracted_url = item.split("?")[0]
+        extracted_urls.append(extracted_url)
+
+    combined_url = '##*##*'.join(extracted_urls)
+    print(combined_url)
+
+    return combined_url
+
 
 
 class CompletionExecutor:
